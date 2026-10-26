@@ -1,0 +1,23 @@
+# Build output (se regenera al compilar)
+bin/
+obj/
+
+# Archivos locales de Visual Studio
+.vs/
+*.user
+*.suo
+*.VC.db
+*.VC.opendb
+*.ipch
+*.aps
+
+# Ejecutables y archivos intermedios sueltos
+*.exe
+*.ilk
+*.pdb
+*.obj
+*.tlog
+*.log
+
+# Zips de releases
+*.zip
