@@ -1,4 +1,4 @@
-#include "game/game.h"
+    #include "game/game.h"
 
 #include "raylib.h"
 
@@ -22,7 +22,7 @@ static const char* WINDOW_TITLE = "Flappy Bird";
 static const char* GAME_VERSION_TEXT = "v0.1";
 
 // Textos que ve el usuario
-static const char* CONTROLS_TEXT = "Flechas ARRIBA / ABAJO para moverte. Esquiva el bloque verde";
+static const char* CONTROLS_TEXT = "Espacio para saltar. Esquiva el bloque verde";
 static const char* GAME_OVER_TITLE_TEXT = "PERDISTE";
 static const char* GAME_OVER_REASON_TEXT = "Chocaste contra el obstaculo";
 static const char* GAME_OVER_OPTIONS_TEXT = "Presiona R para reiniciar o ESC para salir";

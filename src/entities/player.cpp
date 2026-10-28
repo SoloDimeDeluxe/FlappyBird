@@ -3,11 +3,17 @@
 // Valores de configuracion del jugador (solo se usan en este archivo)
 static const float PLAYER_SIZE = 40.0f;
 static const float PLAYER_POSITION_X = 100.0f;
-static const float PLAYER_SPEED = 400.0f;
+static const float GRAVITY = 1200.0f;
+static const float JUMP_VELOCITY = -450.0f;
+static const KeyboardKey JUMP_KEY = KEY_SPACE;
 static const Color PLAYER_COLOR = YELLOW;
 
-// Mueve al jugador con las flechas (movimiento simple, todavia sin gravedad)
-static void MovePlayerWithInput(Player& player, float deltaTime);
+
+// Al apretar la tecla de salto, reemplazar la velocidad actual con la de salto
+static void HandleJumpInput(Player& player);
+
+// Acelera al jugador hacia abajo y lo mueve segun su velocidad
+static void ApplyGravity(Player& player, float deltaTime);
 
 // Mantiene al jugador entre el borde superior y el inferior de la pantalla
 static void KeepPlayerInsideScreen(Player& player, int screenHeight);
@@ -20,7 +26,7 @@ Player CreatePlayer(int screenHeight)
     player.body.height = PLAYER_SIZE;
     player.body.x = PLAYER_POSITION_X;
     player.body.y = (static_cast<float>(screenHeight) - PLAYER_SIZE) / 2.0f;
-    player.speed = PLAYER_SPEED;
+    player.verticalVelocity = 0.0f;
     player.color = PLAYER_COLOR;
 
     return player;
@@ -28,7 +34,9 @@ Player CreatePlayer(int screenHeight)
 
 void UpdatePlayer(Player& player, int screenHeight, float deltaTime)
 {
-    MovePlayerWithInput(player, deltaTime);
+    //Chequea el salto antes de moverse para que el jugador suba en el mismo frame que presionó la tecla
+    HandleJumpInput(player);
+    ApplyGravity(player, deltaTime);
     KeepPlayerInsideScreen(player, screenHeight);
 }
 
@@ -37,18 +45,20 @@ void DrawPlayer(const Player& player)
     DrawRectangleRec(player.body, player.color);
 }
 
-static void MovePlayerWithInput(Player& player, float deltaTime)
+static void HandleJumpInput(Player& player)
 {
-    // La velocidad se multiplica por el delta time para que el movimiento sea igual con cualquier cantidad de FPS
-    if (IsKeyDown(KEY_UP))
+    // Se reemplaza la velocidad para que el salto sea inmediato independientemente de si cae rapido el jugador
+    if (IsKeyPressed(JUMP_KEY))
     {
-        player.body.y -= player.speed * deltaTime;
+        player.verticalVelocity = JUMP_VELOCITY;
     }
+}
 
-    if (IsKeyDown(KEY_DOWN))
-    {
-        player.body.y += player.speed * deltaTime;
-    }
+static void ApplyGravity(Player& player, float deltaTime)
+{
+    // Todo se multiplica por delta time
+    player.verticalVelocity += GRAVITY * deltaTime;
+    player.body.y += player.verticalVelocity * deltaTime;
 }
 
 static void KeepPlayerInsideScreen(Player& player, int screenHeight)
