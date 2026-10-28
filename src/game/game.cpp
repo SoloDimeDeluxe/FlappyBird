@@ -29,7 +29,7 @@ static const char* WINDOW_TITLE = "Flappy Bird";
 static const char* GAME_VERSION_TEXT = "v0.1";
 
 // Textos que ve el usuario
-static const char* CONTROLS_TEXT = "ESPACIO para saltar. Esquiva el bloque verde";
+static const char* CONTROLS_TEXT = "ESPACIO para saltar. Pasa por el hueco del obstaculo verde";
 static const char* GAME_OVER_TITLE_TEXT = "PERDISTE";
 static const char* OBSTACLE_DEFEAT_TEXT = "Chocaste contra el obstaculo";
 static const char* FLOOR_DEFEAT_TEXT = "Caiste al piso";
@@ -143,7 +143,7 @@ static void UpdateGameplay(Game& game, float deltaTime)
     UpdateObstacle(game.obstacle, SCREEN_WIDTH, SCREEN_HEIGHT, deltaTime);
 
     // Condiciones de derrota: el jugador toca el obstaculo o cae hasta el piso
-    if (CheckCollisionRecs(game.player.body, game.obstacle.body))
+    if (IsCollidingWithObstacle(game.obstacle, game.player.body))
     {
         EndGame(game, DefeatReason::ObstacleCollision);
     }
