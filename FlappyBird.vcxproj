@@ -93,11 +93,20 @@
     <ClCompile Include="src\game\game.cpp" />
     <ClCompile Include="src\entities\player.cpp" />
     <ClCompile Include="src\entities\obstacle.cpp" />
+    <ClCompile Include="src\scenes\main_menu.cpp" />
+    <ClCompile Include="src\scenes\gameplay.cpp" />
+    <ClCompile Include="src\ui\button.cpp" />
+    <ClCompile Include="src\ui\text.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\game\game.h" />
     <ClInclude Include="src\entities\player.h" />
     <ClInclude Include="src\entities\obstacle.h" />
+    <ClInclude Include="src\scenes\scene.h" />
+    <ClInclude Include="src\scenes\main_menu.h" />
+    <ClInclude Include="src\scenes\gameplay.h" />
+    <ClInclude Include="src\ui\button.h" />
+    <ClInclude Include="src\ui\text.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

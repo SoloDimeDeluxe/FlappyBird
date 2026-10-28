@@ -7,6 +7,12 @@
     <Filter Include="entities">
       <UniqueIdentifier>{8E4D2B17-5C93-4F6A-B0E1-7D3C9A2F4E22}</UniqueIdentifier>
     </Filter>
+    <Filter Include="scenes">
+      <UniqueIdentifier>{C97327FD-EB66-4241-8A66-4D8B414D6311}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ui">
+      <UniqueIdentifier>{8ECDF213-1849-4657-B67E-C6E1AE692ADF}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
@@ -19,6 +25,18 @@
     <ClCompile Include="src\entities\obstacle.cpp">
       <Filter>entities</Filter>
     </ClCompile>
+    <ClCompile Include="src\scenes\main_menu.cpp">
+      <Filter>scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\scenes\gameplay.cpp">
+      <Filter>scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ui\button.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ui\text.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\game\game.h">
@@ -29,6 +47,21 @@
     </ClInclude>
     <ClInclude Include="src\entities\obstacle.h">
       <Filter>entities</Filter>
+    </ClInclude>
+    <ClInclude Include="src\scenes\scene.h">
+      <Filter>scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\scenes\main_menu.h">
+      <Filter>scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\scenes\gameplay.h">
+      <Filter>scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ui\button.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ui\text.h">
+      <Filter>ui</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

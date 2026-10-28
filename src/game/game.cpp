@@ -2,22 +2,9 @@
 
 #include "raylib.h"
 
-#include "entities/player.h"
-#include "entities/obstacle.h"
-
-// Estados posibles del gameplay
-enum class GameState
-{
-    Playing,
-    GameOver
-};
-
-// Motivos por los que se puede perder
-enum class DefeatReason
-{
-    ObstacleCollision,
-    FellToFloor
-};
+#include "scenes/scene.h"
+#include "scenes/main_menu.h"
+#include "scenes/gameplay.h"
 
 // Configuracion de la ventana
 static const int SCREEN_WIDTH = 800;
@@ -25,206 +12,106 @@ static const int SCREEN_HEIGHT = 450;
 static const int TARGET_FPS = 60;
 static const char* WINDOW_TITLE = "Flappy Bird";
 
-// Version del juego que se muestra en una esquina de la pantalla
-static const char* GAME_VERSION_TEXT = "v0.1";
+// Escena con la que arranca el juego
+static const Scene FIRST_SCENE = Scene::MainMenu;
 
-// Textos que ve el usuario
-static const char* CONTROLS_TEXT = "ESPACIO para saltar. Pasa por el hueco del obstaculo verde";
-static const char* GAME_OVER_TITLE_TEXT = "PERDISTE";
-static const char* OBSTACLE_DEFEAT_TEXT = "Chocaste contra el obstaculo";
-static const char* FLOOR_DEFEAT_TEXT = "Caiste al piso";
-static const char* GAME_OVER_OPTIONS_TEXT = "Presiona R para reiniciar o ESC para salir";
+// Abre la ventana y prepara las escenas
+static void InitGame();
 
-// Distribucion de los textos
-static const int TEXT_MARGIN = 10;
-static const int SMALL_FONT_SIZE = 20;
-static const int TITLE_FONT_SIZE = 60;
-static const int GAME_OVER_LINE_SPACING = 50;
+// Actualiza la escena actual y devuelve la escena en la que tiene que estar el juego el proximo frame
+static Scene UpdateCurrentScene(Scene currentScene);
 
-// Colores
-static const Color BACKGROUND_COLOR = SKYBLUE;
-static const Color TEXT_COLOR = DARKGRAY;
-static const Color GAME_OVER_TITLE_COLOR = RED;
+// Prepara la escena a la que se acaba de entrar
+static void EnterScene(Scene scene);
 
-// Todo lo que el juego necesita mientras se ejecuta
-struct Game
-{
-    Player player;
-    Obstacle obstacle;
-    GameState state;
-    DefeatReason defeatReason;
-};
-
-// Crea la ventana y los elementos iniciales del juego
-static void InitGame(Game& game);
-
-// Vuelve a poner al jugador y al obstaculo en sus posiciones iniciales
-static void ResetGame(Game& game);
-
-// Actualiza la logica del juego segun el estado actual
-static void UpdateGame(Game& game);
-
-// Mueve al jugador y al obstaculo y chequea las condiciones de derrota
-static void UpdateGameplay(Game& game, float deltaTime);
-
-// Termina la partida guardando el motivo, para mostrarlo en el mensaje de derrota
-static void EndGame(Game& game, DefeatReason reason);
-
-// Espera a que el usuario elija reiniciar despues de perder
-static void UpdateGameOver(Game& game);
-
-// Dibuja todo en la pantalla
-static void DrawGame(const Game& game);
-
-// Dibuja los controles y la version del juego
-static void DrawHud();
-
-// Dibuja el mensaje de derrota, su motivo y las opciones disponibles
-static void DrawGameOverMessage(DefeatReason reason);
-
-// Devuelve el texto que explica el motivo de la derrota
-static const char* GetDefeatReasonText(DefeatReason reason);
-
-// Dibuja un texto centrado horizontalmente en la pantalla
-static void DrawCenteredText(const char* text, int positionY, int fontSize, Color color);
+// Dibuja la escena actual
+static void DrawCurrentScene(Scene currentScene);
 
 // Cierra la ventana
 static void CloseGame();
 
 void RunGame()
 {
-    Game game;
+    InitGame();
 
-    InitGame(game);
+    Scene currentScene = FIRST_SCENE;
 
-    // ESC o la cruz de la ventana terminan el loop (ESC es la tecla de salida por defecto de raylib)
-    while (!WindowShouldClose())
+    // La cruz de la ventana o la opcion Salir del menu terminan el loop
+    while (!WindowShouldClose() && currentScene != Scene::Exit)
     {
-        UpdateGame(game);
-        DrawGame(game);
+        currentScene = UpdateCurrentScene(currentScene);
+        DrawCurrentScene(currentScene);
     }
 
     CloseGame();
 }
 
-static void InitGame(Game& game)
+static void InitGame()
 {
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, WINDOW_TITLE);
     SetTargetFPS(TARGET_FPS);
 
-    ResetGame(game);
+    // ESC deja de cerrar el juego (es la tecla de salida por defecto de raylib), ahora se usa para volver al menu
+    SetExitKey(KEY_NULL);
+
+    InitMainMenu();
 }
 
-static void ResetGame(Game& game)
+static Scene UpdateCurrentScene(Scene currentScene)
 {
-    game.player = CreatePlayer(SCREEN_HEIGHT);
-    game.obstacle = CreateObstacle(SCREEN_WIDTH, SCREEN_HEIGHT);
-    game.state = GameState::Playing;
-    game.defeatReason = DefeatReason::ObstacleCollision;
-}
+    Scene nextScene = currentScene;
 
-static void UpdateGame(Game& game)
-{
-    switch (game.state)
+    switch (currentScene)
     {
-    case GameState::Playing:
-        UpdateGameplay(game, GetFrameTime());
+    case Scene::MainMenu:
+        nextScene = UpdateMainMenu();
         break;
 
-    case GameState::GameOver:
-        UpdateGameOver(game);
+    case Scene::Gameplay:
+        nextScene = UpdateGameplay();
+        break;
+
+    case Scene::Exit:
         break;
     }
-}
 
-static void UpdateGameplay(Game& game, float deltaTime)
-{
-    UpdatePlayer(game.player, deltaTime);
-    UpdateObstacle(game.obstacle, SCREEN_WIDTH, SCREEN_HEIGHT, deltaTime);
-
-    // Condiciones de derrota: el jugador toca el obstaculo o cae hasta el piso
-    if (IsCollidingWithObstacle(game.obstacle, game.player.body))
+    // Solo se prepara la escena cuando se cambia, no en todos los frames
+    if (nextScene != currentScene)
     {
-        EndGame(game, DefeatReason::ObstacleCollision);
+        EnterScene(nextScene);
     }
-    else if (HasPlayerReachedFloor(game.player, SCREEN_HEIGHT))
-    {
-        EndGame(game, DefeatReason::FellToFloor);
-    }
+
+    return nextScene;
 }
 
-static void EndGame(Game& game, DefeatReason reason)
+static void EnterScene(Scene scene)
 {
-    game.state = GameState::GameOver;
-    game.defeatReason = reason;
-}
-
-static void UpdateGameOver(Game& game)
-{
-    if (IsKeyPressed(KEY_R))
+    // Cada vez que se entra al gameplay desde el menu arranca una partida nueva
+    if (scene == Scene::Gameplay)
     {
-        ResetGame(game);
+        InitGameplay();
     }
 }
 
-static void DrawGame(const Game& game)
+static void DrawCurrentScene(Scene currentScene)
 {
     BeginDrawing();
-    ClearBackground(BACKGROUND_COLOR);
 
-    // Los elementos se siguen dibujando despues de perder, para que el jugador vea como fue el choque
-    DrawObstacle(game.obstacle);
-    DrawPlayer(game.player);
-
-    DrawHud();
-
-    if (game.state == GameState::GameOver)
+    switch (currentScene)
     {
-        DrawGameOverMessage(game.defeatReason);
+    case Scene::MainMenu:
+        DrawMainMenu();
+        break;
+
+    case Scene::Gameplay:
+        DrawGameplay();
+        break;
+
+    case Scene::Exit:
+        break;
     }
 
     EndDrawing();
-}
-
-static void DrawHud()
-{
-    DrawText(CONTROLS_TEXT, TEXT_MARGIN, TEXT_MARGIN, SMALL_FONT_SIZE, TEXT_COLOR);
-
-    // Version del juego en la esquina inferior derecha
-    const int versionTextWidth = MeasureText(GAME_VERSION_TEXT, SMALL_FONT_SIZE);
-    const int versionPositionX = SCREEN_WIDTH - versionTextWidth - TEXT_MARGIN;
-    const int versionPositionY = SCREEN_HEIGHT - SMALL_FONT_SIZE - TEXT_MARGIN;
-
-    DrawText(GAME_VERSION_TEXT, versionPositionX, versionPositionY, SMALL_FONT_SIZE, TEXT_COLOR);
-}
-
-static void DrawGameOverMessage(DefeatReason reason)
-{
-    const int titlePositionY = SCREEN_HEIGHT / 2 - TITLE_FONT_SIZE;
-    const int reasonPositionY = titlePositionY + TITLE_FONT_SIZE + TEXT_MARGIN;
-    const int optionsPositionY = reasonPositionY + GAME_OVER_LINE_SPACING;
-
-    DrawCenteredText(GAME_OVER_TITLE_TEXT, titlePositionY, TITLE_FONT_SIZE, GAME_OVER_TITLE_COLOR);
-    DrawCenteredText(GetDefeatReasonText(reason), reasonPositionY, SMALL_FONT_SIZE, TEXT_COLOR);
-    DrawCenteredText(GAME_OVER_OPTIONS_TEXT, optionsPositionY, SMALL_FONT_SIZE, TEXT_COLOR);
-}
-
-static const char* GetDefeatReasonText(DefeatReason reason)
-{
-    if (reason == DefeatReason::FellToFloor)
-    {
-        return FLOOR_DEFEAT_TEXT;
-    }
-
-    return OBSTACLE_DEFEAT_TEXT;
-}
-
-static void DrawCenteredText(const char* text, int positionY, int fontSize, Color color)
-{
-    const int textWidth = MeasureText(text, fontSize);
-    const int positionX = (SCREEN_WIDTH - textWidth) / 2;
-
-    DrawText(text, positionX, positionY, fontSize, color);
 }
 
 static void CloseGame()
