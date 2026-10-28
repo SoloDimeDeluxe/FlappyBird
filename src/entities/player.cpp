@@ -3,20 +3,19 @@
 // Valores de configuracion del jugador (solo se usan en este archivo)
 static const float PLAYER_SIZE = 40.0f;
 static const float PLAYER_POSITION_X = 100.0f;
-static const float GRAVITY = 1200.0f;
-static const float JUMP_VELOCITY = -450.0f;
+static const float GRAVITY = 1200.0f;      // Aceleracion hacia abajo en pixeles por segundo al cuadrado
+static const float JUMP_VELOCITY = -450.0f; // Velocidad que recibe al saltar (negativa porque va hacia arriba)
 static const KeyboardKey JUMP_KEY = KEY_SPACE;
 static const Color PLAYER_COLOR = YELLOW;
 
-
-// Al apretar la tecla de salto, reemplazar la velocidad actual con la de salto
+// Si se presiona la tecla de salto, reemplaza la velocidad actual por la del salto
 static void HandleJumpInput(Player& player);
 
-// Acelera al jugador hacia abajo y lo mueve segun su velocidad
+// Acelera al jugador hacia abajo y lo mueve segun su velocidad vertical
 static void ApplyGravity(Player& player, float deltaTime);
 
-// Mantiene al jugador entre el borde superior y el inferior de la pantalla
-static void KeepPlayerInsideScreen(Player& player, int screenHeight);
+// Frena al jugador cuando choca contra el borde superior de la pantalla (el techo)
+static void StopPlayerAtCeiling(Player& player);
 
 Player CreatePlayer(int screenHeight)
 {
@@ -32,12 +31,19 @@ Player CreatePlayer(int screenHeight)
     return player;
 }
 
-void UpdatePlayer(Player& player, int screenHeight, float deltaTime)
+void UpdatePlayer(Player& player, float deltaTime)
 {
-    //Chequea el salto antes de moverse para que el jugador suba en el mismo frame que presionó la tecla
+    // El salto se chequea antes de mover, para que el jugador suba en el mismo frame en que se presiona
     HandleJumpInput(player);
     ApplyGravity(player, deltaTime);
-    KeepPlayerInsideScreen(player, screenHeight);
+    StopPlayerAtCeiling(player);
+}
+
+bool HasPlayerReachedFloor(const Player& player, int screenHeight)
+{
+    const float playerBottom = player.body.y + player.body.height;
+
+    return playerBottom >= static_cast<float>(screenHeight);
 }
 
 void DrawPlayer(const Player& player)
@@ -47,7 +53,7 @@ void DrawPlayer(const Player& player)
 
 static void HandleJumpInput(Player& player)
 {
-    // Se reemplaza la velocidad para que el salto sea inmediato independientemente de si cae rapido el jugador
+    // Se reemplaza la velocidad (no se suma) para que el salto sea inmediato aunque el jugador venga cayendo rapido
     if (IsKeyPressed(JUMP_KEY))
     {
         player.verticalVelocity = JUMP_VELOCITY;
@@ -56,21 +62,17 @@ static void HandleJumpInput(Player& player)
 
 static void ApplyGravity(Player& player, float deltaTime)
 {
-    // Todo se multiplica por delta time
+    // Todo se multiplica por el delta time para que el movimiento sea igual con cualquier cantidad de FPS
     player.verticalVelocity += GRAVITY * deltaTime;
     player.body.y += player.verticalVelocity * deltaTime;
 }
 
-static void KeepPlayerInsideScreen(Player& player, int screenHeight)
+static void StopPlayerAtCeiling(Player& player)
 {
-    const float lowestPositionY = static_cast<float>(screenHeight) - player.body.height;
-
     if (player.body.y < 0.0f)
     {
+        // Al chocar contra el techo se frena la subida, para que empiece a caer enseguida
         player.body.y = 0.0f;
-    }
-    else if (player.body.y > lowestPositionY)
-    {
-        player.body.y = lowestPositionY;
+        player.verticalVelocity = 0.0f;
     }
 }

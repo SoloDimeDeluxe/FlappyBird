@@ -1,4 +1,4 @@
-    #include "game/game.h"
+#include "game/game.h"
 
 #include "raylib.h"
 
@@ -12,6 +12,13 @@ enum class GameState
     GameOver
 };
 
+// Motivos por los que se puede perder
+enum class DefeatReason
+{
+    ObstacleCollision,
+    FellToFloor
+};
+
 // Configuracion de la ventana
 static const int SCREEN_WIDTH = 800;
 static const int SCREEN_HEIGHT = 450;
@@ -22,9 +29,10 @@ static const char* WINDOW_TITLE = "Flappy Bird";
 static const char* GAME_VERSION_TEXT = "v0.1";
 
 // Textos que ve el usuario
-static const char* CONTROLS_TEXT = "Espacio para saltar. Esquiva el bloque verde";
+static const char* CONTROLS_TEXT = "ESPACIO para saltar. Esquiva el bloque verde";
 static const char* GAME_OVER_TITLE_TEXT = "PERDISTE";
-static const char* GAME_OVER_REASON_TEXT = "Chocaste contra el obstaculo";
+static const char* OBSTACLE_DEFEAT_TEXT = "Chocaste contra el obstaculo";
+static const char* FLOOR_DEFEAT_TEXT = "Caiste al piso";
 static const char* GAME_OVER_OPTIONS_TEXT = "Presiona R para reiniciar o ESC para salir";
 
 // Distribucion de los textos
@@ -44,6 +52,7 @@ struct Game
     Player player;
     Obstacle obstacle;
     GameState state;
+    DefeatReason defeatReason;
 };
 
 // Crea la ventana y los elementos iniciales del juego
@@ -55,8 +64,11 @@ static void ResetGame(Game& game);
 // Actualiza la logica del juego segun el estado actual
 static void UpdateGame(Game& game);
 
-// Mueve al jugador y al obstaculo y chequea la condicion de derrota
+// Mueve al jugador y al obstaculo y chequea las condiciones de derrota
 static void UpdateGameplay(Game& game, float deltaTime);
+
+// Termina la partida guardando el motivo, para mostrarlo en el mensaje de derrota
+static void EndGame(Game& game, DefeatReason reason);
 
 // Espera a que el usuario elija reiniciar despues de perder
 static void UpdateGameOver(Game& game);
@@ -67,8 +79,11 @@ static void DrawGame(const Game& game);
 // Dibuja los controles y la version del juego
 static void DrawHud();
 
-// Dibuja el mensaje de derrota y las opciones disponibles
-static void DrawGameOverMessage();
+// Dibuja el mensaje de derrota, su motivo y las opciones disponibles
+static void DrawGameOverMessage(DefeatReason reason);
+
+// Devuelve el texto que explica el motivo de la derrota
+static const char* GetDefeatReasonText(DefeatReason reason);
 
 // Dibuja un texto centrado horizontalmente en la pantalla
 static void DrawCenteredText(const char* text, int positionY, int fontSize, Color color);
@@ -105,6 +120,7 @@ static void ResetGame(Game& game)
     game.player = CreatePlayer(SCREEN_HEIGHT);
     game.obstacle = CreateObstacle(SCREEN_WIDTH, SCREEN_HEIGHT);
     game.state = GameState::Playing;
+    game.defeatReason = DefeatReason::ObstacleCollision;
 }
 
 static void UpdateGame(Game& game)
@@ -123,14 +139,24 @@ static void UpdateGame(Game& game)
 
 static void UpdateGameplay(Game& game, float deltaTime)
 {
-    UpdatePlayer(game.player, SCREEN_HEIGHT, deltaTime);
+    UpdatePlayer(game.player, deltaTime);
     UpdateObstacle(game.obstacle, SCREEN_WIDTH, SCREEN_HEIGHT, deltaTime);
 
-    // Condicion de derrota: el jugador toca el obstaculo
+    // Condiciones de derrota: el jugador toca el obstaculo o cae hasta el piso
     if (CheckCollisionRecs(game.player.body, game.obstacle.body))
     {
-        game.state = GameState::GameOver;
+        EndGame(game, DefeatReason::ObstacleCollision);
     }
+    else if (HasPlayerReachedFloor(game.player, SCREEN_HEIGHT))
+    {
+        EndGame(game, DefeatReason::FellToFloor);
+    }
+}
+
+static void EndGame(Game& game, DefeatReason reason)
+{
+    game.state = GameState::GameOver;
+    game.defeatReason = reason;
 }
 
 static void UpdateGameOver(Game& game)
@@ -154,7 +180,7 @@ static void DrawGame(const Game& game)
 
     if (game.state == GameState::GameOver)
     {
-        DrawGameOverMessage();
+        DrawGameOverMessage(game.defeatReason);
     }
 
     EndDrawing();
@@ -172,15 +198,25 @@ static void DrawHud()
     DrawText(GAME_VERSION_TEXT, versionPositionX, versionPositionY, SMALL_FONT_SIZE, TEXT_COLOR);
 }
 
-static void DrawGameOverMessage()
+static void DrawGameOverMessage(DefeatReason reason)
 {
     const int titlePositionY = SCREEN_HEIGHT / 2 - TITLE_FONT_SIZE;
     const int reasonPositionY = titlePositionY + TITLE_FONT_SIZE + TEXT_MARGIN;
     const int optionsPositionY = reasonPositionY + GAME_OVER_LINE_SPACING;
 
     DrawCenteredText(GAME_OVER_TITLE_TEXT, titlePositionY, TITLE_FONT_SIZE, GAME_OVER_TITLE_COLOR);
-    DrawCenteredText(GAME_OVER_REASON_TEXT, reasonPositionY, SMALL_FONT_SIZE, TEXT_COLOR);
+    DrawCenteredText(GetDefeatReasonText(reason), reasonPositionY, SMALL_FONT_SIZE, TEXT_COLOR);
     DrawCenteredText(GAME_OVER_OPTIONS_TEXT, optionsPositionY, SMALL_FONT_SIZE, TEXT_COLOR);
+}
+
+static const char* GetDefeatReasonText(DefeatReason reason)
+{
+    if (reason == DefeatReason::FellToFloor)
+    {
+        return FLOOR_DEFEAT_TEXT;
+    }
+
+    return OBSTACLE_DEFEAT_TEXT;
 }
 
 static void DrawCenteredText(const char* text, int positionY, int fontSize, Color color)
