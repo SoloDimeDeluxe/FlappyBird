@@ -31,6 +31,9 @@
     <ClCompile Include="src\scenes\gameplay.cpp">
       <Filter>scenes</Filter>
     </ClCompile>
+    <ClCompile Include="src\scenes\credits.cpp">
+      <Filter>scenes</Filter>
+    </ClCompile>
     <ClCompile Include="src\ui\button.cpp">
       <Filter>ui</Filter>
     </ClCompile>
@@ -55,6 +58,9 @@
       <Filter>scenes</Filter>
     </ClInclude>
     <ClInclude Include="src\scenes\gameplay.h">
+      <Filter>scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\scenes\credits.h">
       <Filter>scenes</Filter>
     </ClInclude>
     <ClInclude Include="src\ui\button.h">

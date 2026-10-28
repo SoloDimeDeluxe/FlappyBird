@@ -9,6 +9,7 @@
 static const char* GAME_TITLE_TEXT = "FLAPPY BIRD";
 static const char* MENU_HINT_TEXT = "Hace clic en una opcion";
 static const char* PLAY_BUTTON_TEXT = "Jugar";
+static const char* CREDITS_BUTTON_TEXT = "Creditos";
 static const char* EXIT_BUTTON_TEXT = "Salir";
 
 // Version del juego, que ahora se muestra en un borde del menu
@@ -30,6 +31,7 @@ static const Color TEXT_COLOR = DARKGRAY;
 
 // Botones del menu (solo se usan en este archivo)
 static Button playButton;
+static Button creditsButton;
 static Button exitButton;
 
 // Dibuja la version del juego en la esquina inferior derecha
@@ -39,7 +41,8 @@ void InitMainMenu()
 {
     // Los botones van uno debajo del otro, centrados en la pantalla
     playButton = CreateCenteredButton(PLAY_BUTTON_TEXT, FIRST_BUTTON_POSITION_Y);
-    exitButton = CreateCenteredButton(EXIT_BUTTON_TEXT, FIRST_BUTTON_POSITION_Y + BUTTON_SPACING);
+    creditsButton = CreateCenteredButton(CREDITS_BUTTON_TEXT, FIRST_BUTTON_POSITION_Y + BUTTON_SPACING);
+    exitButton = CreateCenteredButton(EXIT_BUTTON_TEXT, FIRST_BUTTON_POSITION_Y + BUTTON_SPACING * 2.0f);
 }
 
 Scene UpdateMainMenu()
@@ -47,6 +50,11 @@ Scene UpdateMainMenu()
     if (IsButtonClicked(playButton))
     {
         return Scene::Gameplay;
+    }
+
+    if (IsButtonClicked(creditsButton))
+    {
+        return Scene::Credits;
     }
 
     if (IsButtonClicked(exitButton))
@@ -66,6 +74,7 @@ void DrawMainMenu()
     DrawCenteredText(MENU_HINT_TEXT, HINT_POSITION_Y, SMALL_FONT_SIZE, TEXT_COLOR);
 
     DrawButton(playButton);
+    DrawButton(creditsButton);
     DrawButton(exitButton);
 
     DrawGameVersion();

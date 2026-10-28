@@ -5,6 +5,7 @@
 #include "scenes/scene.h"
 #include "scenes/main_menu.h"
 #include "scenes/gameplay.h"
+#include "scenes/credits.h"
 
 // Configuracion de la ventana
 static const int SCREEN_WIDTH = 800;
@@ -71,6 +72,10 @@ static Scene UpdateCurrentScene(Scene currentScene)
         nextScene = UpdateGameplay();
         break;
 
+    case Scene::Credits:
+        nextScene = UpdateCredits();
+        break;
+
     case Scene::Exit:
         break;
     }
@@ -105,6 +110,10 @@ static void DrawCurrentScene(Scene currentScene)
 
     case Scene::Gameplay:
         DrawGameplay();
+        break;
+
+    case Scene::Credits:
+        DrawCredits();
         break;
 
     case Scene::Exit:

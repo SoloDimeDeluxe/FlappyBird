@@ -95,6 +95,7 @@
     <ClCompile Include="src\entities\obstacle.cpp" />
     <ClCompile Include="src\scenes\main_menu.cpp" />
     <ClCompile Include="src\scenes\gameplay.cpp" />
+    <ClCompile Include="src\scenes\credits.cpp" />
     <ClCompile Include="src\ui\button.cpp" />
     <ClCompile Include="src\ui\text.cpp" />
   </ItemGroup>
@@ -105,6 +106,7 @@
     <ClInclude Include="src\scenes\scene.h" />
     <ClInclude Include="src\scenes\main_menu.h" />
     <ClInclude Include="src\scenes\gameplay.h" />
+    <ClInclude Include="src\scenes\credits.h" />
     <ClInclude Include="src\ui\button.h" />
     <ClInclude Include="src\ui\text.h" />
   </ItemGroup>

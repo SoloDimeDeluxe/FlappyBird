@@ -7,6 +7,7 @@ enum class Scene
 {
     MainMenu,
     Gameplay,
+    Credits,
     Exit
 };
 
